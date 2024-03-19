@@ -4,41 +4,22 @@
 
 ## 7.1.与内核模块绑定和解除绑定网络端口
 
-```
-note: 
-使用分流驱动的 PMDs 不应与其内核驱动程序解除绑定。
-本节适用于使用 UIO 或 VFIO 驱动程序的 PMDs。
-有关更多详细信息，请参阅 [Bifurcated Driver](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#bifurcated-driver) 部分。
-```
+> **note:** 
+> 使用分流驱动的 PMDs 不应与其内核驱动程序解除绑定。本节适用于使用 UIO 或 VFIO 驱动程序的 PMDs。有关更多详细信息，请参阅 [Bifurcated Driver](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#bifurcated-driver) 部分。
 
-```
-note: 
-建议在所有情况下都使用 `vfio-pci` 作为 DPDK 绑定端口的内核模块。
-如果IOMMU不可用，则可以在 [no-iommu](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#vfio-noiommu) 模式下使用`vfio-pci`。
-如果由于某种原因 vfio 不可用，则可以使用基于 UIO 的模块 `igb_uio` 和 `uio_pci_generic`。
-详细信息请参见 [UIO](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#uio) 部分。
-```
+> **note:** 
+> 建议在所有情况下都使用 `vfio-pci` 作为 DPDK 绑定端口的内核模块。如果IOMMU不可用，则可以在 [no-iommu](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#vfio-noiommu) 模式下使用`vfio-pci`。如果由于某种原因 vfio 不可用，则可以使用基于 UIO 的模块 `igb_uio` 和 `uio_pci_generic`。详细信息请参见 [UIO](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#uio) 部分。
 
 大多数设备要求 DPDK 使用的硬件与其使用的内核驱动程序解除绑定，并且在应用程序运行之前绑定到 `vfio-pci` 内核模块。对于此类 PMDs，Linux* 控制下的任何网络端口或其他硬件都将被忽略，并且不能被应用程序使用。
 
 要将端口绑定到 vfio-pci 模块以供 DPDK 使用，或者将端口返回给 Linux 控制，`usertools` 子目录中提供了一个名为 `dpdk-devbind.py` 的实用程序脚本。该实用程序可用于提供系统上网络端口当前状态的视图，并从不同的内核模块（包括 VFIO 和 UIO 模块）绑定和取消绑定这些端口。以下是如何使用该脚本的一些示例。可以通过使用 `--help` 或 `--usage` 选项调用脚本来获取脚本及其参数的完整描述。请注意，要使用的 UIO 或 VFIO 内核模块应在运行 `dpdk-devbind.py` 脚本之前加载到内核中。
 
-```
-note: 
-由于 VFIO 的工作方式，可与 VFIO 一起使用的设备存在一定的限制。
-主要取决于 IOMMU 组的工作方式。
-任何虚拟功能设备通常都可以单独与 VFIO 一起使用，
-但物理设备可能需要将所有端口绑定到 VFIO，或者其中一些端口绑定到 VFIO，
-而其他端口则根本不绑定任何东西。
+> **note:**
+> 由于 VFIO 的工作方式，可与 VFIO 一起使用的设备存在一定的限制。主要取决于 IOMMU 组的工作方式。任何虚拟功能设备通常都可以单独与 VFIO 一起使用，但物理设备可能需要将所有端口绑定到 VFIO，或者其中一些端口绑定到 VFIO，而其他端口则根本不绑定任何东西。
+> 如果您的设备位于 PCI 至 PCI 桥接器后面，则该桥接器将成为您的设备所在的 IOMMU 组的一部分。因此，桥接驱动程序也应该与桥接 PCI 设备解除绑定，以便 VFIO 能够与桥接器后面的设备一起工作。
 
-如果您的设备位于 PCI 至 PCI 桥接器后面，则该桥接器将成为您的设备所在的 IOMMU 组的一部分。
-因此，桥接驱动程序也应该与桥接 PCI 设备解除绑定，以便 VFIO 能够与桥接器后面的设备一起工作。
-```
-
-```
-虽然任何用户都可以运行 `dpdk-devbind.py` 脚本来查看网络端口的状态，
-但绑定或解除绑定网络端口需要 root 权限。
-```
+> **note:**
+> 虽然任何用户都可以运行 `dpdk-devbind.py` 脚本来查看网络端口的状态，但绑定或解除绑定网络端口需要 root 权限。
 
 查看系统上所有网络端口的状态：
 
@@ -92,9 +73,8 @@ VFIO 内核通常默认存在于所有发行版中，但是请查阅您的发行
 
 要利用完整的 VFIO 功能，内核和 BIOS 都必须支持并配置为使用 IO 虚拟化（例如 Intel® VT-d）。
 
-```
-note: 在大多数情况下，指定“iommu=on”作为内核参数应该足以将 Linux 内核配置为使用 IOMMU。
-```
+> **note:**
+> 在大多数情况下，指定“iommu=on”作为内核参数应该足以将 Linux 内核配置为使用 IOMMU。
 
 为了在以非特权用户身份运行 DPDK 应用程序时正确操作 VFIO，还应该设置正确的权限。有关更多信息，请参阅 [Running DPDK Applications Without Root Privileges](https://doc.dpdk.org/guides/linux_gsg/enable_func.html#running-without-root-privileges)。
 
@@ -114,15 +94,11 @@ echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
 
 之后，VFIO 就可以像往常一样与硬件设备一起使用。
 
-```
-note: 
-在使用enable_unsafe_noiommu_mode=1参数再次探测模块之前，可能需要卸载所有VFIO相关模块。
-```
+> **note:** 
+> 在使用 enable_unsafe_noiommu_mode=1 参数再次插入模块之前，可能需要卸载所有VFIO相关模块。
 
-```
-warn: 
-由于 no-IOMMU 模式放弃了 IOMMU 保护，因此它本质上是不安全的。也就是说，在 IOMMU 不可用的情况下，它确实使用户能够保持 VFIO 所具有的设备访问和编程程度。
-```
+> **warning:** 
+> 由于 no-IOMMU 模式放弃了 IOMMU 保护，因此它本质上是不安全的。也就是说，在 IOMMU 不可用的情况下，它确实使用户能够保持 VFIO 所具有的设备访问和编程深度。
 
 ### 7.2.2. VFIO 内存映射限制
 
@@ -233,54 +209,12 @@ cat /boot/config-$(uname -r) | grep NOIOMMU
 
 ## 7.3. VFIO Platform
 
-VFIO Platform 是一个内核驱动程序，通过添加对驻留在 IOMMU 后面的平台设备的支持来扩展 VFIO 的功能。Linux 通常在启动阶段直接从设备树中了解平台设备，这与内置必要信息的 PCI 设备不同。
-
-要使用VFIO平台，必须首先加载vfio-platform模块：
-
-```
-sudo modprobe vfio-platform
-```
-
-``
-note:
-默认情况下，vfio-platform 假定平台设备具有专用的重置驱动程序。如果缺少此类驱动程序或设备不需要该驱动程序，可以通过设置 reset_required = 0 模块参数来关闭此选项。
-``
-
-之后平台设备需要绑定到`vfio-platform`。这是需要两个步骤的标准程序。首先，`driver_override` 在平台设备目录中可用，需要设置为 `vfio-platform`：
-
-```
-sudo echo vfio-platform > /sys/bus/platform/devices/DEV/driver_override
-```
-
-下一个 `DEV` 设备必须绑定到 `vfio-platform` 驱动程序：
-
-```
-sudo echo DEV > /sys/bus/platform/drivers/vfio-platform/bind
-```
-
-应用程序启动时，DPDK 平台总线驱动程序会扫描 `/sys/bus/platform/devices`，搜索具有指向 `vfio` 平台驱动程序的驱动程序符号链接的设备。最后，将扫描的设备与可用的 PMDs 进行匹配。
-
-如果 PMD 名称或 PMD 别名与内核驱动程序名称匹配或 PMD 名称与平台设备名称匹配（全部按该顺序），则匹配成功。
-
-VFIO 平台依赖于 ARM/ARM64，通常在这些系统上运行的发行版上启用。请查阅您的发行版文档以确保情况确实如此。
-
 ## 7.4.分流驱动器
-
-使用分流驱动程序的 PMD 与设备内核驱动程序共存。在这种模型上，NIC 由内核控制，而数据路径由设备顶部的 PMD 直接执行。
-
-这种模式有以下好处：
-- 它是安全且健壮的，因为内存管理和隔离是由内核完成的。
-- 它使用户能够在同一网络端口上运行 DPDK 应用程序时使用旧版 Linux 工具（例如 `ethtool` 或 `ifconfig`）。
-- 它使 DPDK 应用程序能够仅过滤部分流量，而其余流量将由内核驱动程序引导和处理。流分叉由 NIC 硬件执行。例如，使用流隔离模式允许严格选择 DPDK 中接收的内容。
-
-有关分流驱动程序的更多信息，请参阅 [NVIDIA bifurcated PMD](https://www.dpdk.org/wp-content/uploads/sites/35/2016/10/Day02-Session04-RonyEfraim-Userspace2016.pdf) 演示。
 
 ## 7.5. UIO
 
-```
-warn: 
-使用 UIO 驱动程序本质上是不安全的，因为这种方法缺乏 IOMMU 保护，并且只能由 root 用户完成。
-```
+> **warning:** 
+> 使用 UIO 驱动程序本质上是不安全的，因为这种方法缺乏 IOMMU 保护，并且只能由 root 用户完成。
 
 在无法使用 VFIO 的情况下，可以使用替代驱动程序。在许多情况下，Linux 内核中包含的标准 `uio_pci_generic` 模块可以用作 VFIO 的替代品。可以使用以下命令加载该模块：
 
@@ -288,27 +222,22 @@ warn:
 sudo modprobe uio_pci_generic
 ```
 
-```
-note: 
-uio_pci_generic 模块不支持创建虚函数。
-```
+> **note:** 
+> uio_pci_generic 模块不支持创建虚函数。
 
-作为 uio_pci_generic 的替代方案，可以在 [dpdk-kmods](http://git.dpdk.org/dpdk-kmods) 中找到 igb_uio 模块。可以如下图加载：
+作为 uio_pci_generic 的替代方案，可以在 [dpdk-kmods](http://git.dpdk.org/dpdk-kmods) 中找到 igb_uio 模块。可以如下加载：
 
 ```
 sudo modprobe uio
 sudo insmod igb_uio.ko
 ```
 
-```
-note: 对于某些缺乏对传统中断支持的设备，例如虚拟功能 (VF) 设备，可能需要 `igb_uio` 模块来代替 `uio_pci_generic`。
-```
+> **note:** 
+> 对于某些缺乏对传统中断支持的设备，例如虚拟功能 (VF) 设备，可能需要 `igb_uio` 模块来代替 `uio_pci_generic`。
 
-```
-note: 如果启用 UEFI 安全引导，Linux 内核可能不允许在系统上使用 UIO。因此，DPDK 使用的设备应绑定到 vfio-pci 内核模块，而不是任何基于 UIO 的模块。有关更多详细信息，请参阅下面的[ Binding and Unbinding Network Ports to/from the Kernel Modules](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#linux-gsg-binding-kernel)。
-```
+> **note:** 
+> 如果启用 UEFI 安全引导，Linux 内核可能不允许在系统上使用 UIO。因此，DPDK 使用的设备应绑定到 `vfio-pci` 内核模块，而不是任何基于 UIO 的模块。有关更多详细信息，请参阅下面的[ Binding and Unbinding Network Ports to/from the Kernel Modules](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html#linux-gsg-binding-kernel)。
 
-```
-note: 如果用于 DPDK 的设备绑定到基于 UIO 的内核模块，请确保 IOMMU 已禁用或处于直通模式。在 x86_64 系统上，可以在 GRUB 命令行中添加 intel_iommu=off 或 amd_iommu=off 或 intel_iommu=on iommu=pt ，或者在 aarch64 系统上添加 iommu.passthrough=1 。
-```
+> **note:** 
+> 如果用于 DPDK 的设备绑定到基于 UIO 的内核模块，请确保 IOMMU 已禁用或处于直通模式。在 x86_64 系统上，可以在 GRUB 命令行中添加 `intel_iommu=off` 或 `amd_iommu=off` 或 `intel_iommu=on iommu=pt` ，或者在 aarch64 系统上添加 `iommu.passthrough=1`。
 
