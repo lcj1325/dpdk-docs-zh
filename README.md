@@ -19,3 +19,6 @@ https://doc.dpdk.org/guides/index.html
 
 原名：DPDK Tools User Guides
 译名：DPDK工具用户指南
+
+# 声明
+本仓库只是个人记录学习 DPDK 时对官方文档的记录，不作为任何其他用途
